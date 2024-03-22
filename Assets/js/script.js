@@ -1,9 +1,15 @@
 // ? Grab all the references to the DOM elements
+//Mood Board Container
 const moodBoardEl = document.querySelector('#mood-board');
+//Add Image Button
 const addImageBtn = document.querySelector('#add-image');
+//Image Input Field
 const imageUrlInput = document.querySelector('#image-url');
+//Add Text Button
 const addTextBtn = document.querySelector('#add-text');
+//Add Text Input
 const textInput = document.querySelector('#text-input');
+//Clear button
 const clearBtn = document.querySelector('#clear-all');
 
 // ? We need to keep track of the elements that are added to the mood board and their positions
@@ -17,16 +23,20 @@ let currentElement = null;
 
 clearBtn.addEventListener('click', function () {
   // TODO: Clear the local storage and refresh the page
+  localStorage.clear();
+  location.reload();
 });
 
 function updateLocalStorage() {
   // TODO: Update the local storage with the tempStorageObject
+  localStorage.setItem("tempStorageObject", JSON.stringify(tempStorageObject));
 }
 
 // ? Function to load from local storage. This function will be called on page load.
 function loadFromLocalStorage() {
   // TODO: Load and parse the data from local storage and paint the images and text on the mood board
-
+let storedData = localStorage.getItem("tempStorageObject")
+storedData = JSON.parse(storedData)
   if (storedData) {
     tempStorageObject = storedData;
 
@@ -41,6 +51,14 @@ function loadFromLocalStorage() {
     });
 
     // TODO: Paint the stored text to the mood board
+    tempStorageObject.text.forEach((text) => {
+      const tex = document.createElement('div');
+      tex.textContent = text.text;
+      tex.style.left = text.left;
+      tex.style.top = text.top;
+      tex.classList.add('text-item');
+      moodBoardEl.appendChild(tex);
+    })
   }
 }
 
@@ -49,9 +67,13 @@ addImageBtn.addEventListener('click', function () {
   const imageUrl = imageUrlInput.value;
   if (imageUrl) {
     // TODO: Create an image element, add a class of draggable, set the src attribute to the image URL provided by the user, and append it to the body element
+    let imageEl = document.createElement("img")
+    imageEl.classList.add("draggable")
+    imageEl.src = imageUrl
+    moodBoardEl.appendChild(imageEl)
 
     // TODO: Set the `currentElement` to the image element you create.
-
+    currentElement = imageEl;
     // ? We attach the mouse move event listener to the document and the mood board div so that the element can be dragged anywhere on the screen and dropped only on the mood board div.
     attachMouseListeners();
   }
@@ -76,6 +98,8 @@ addTextBtn.addEventListener('click', function () {
 
 function attachMouseListeners() {
   // TODO: Attach the mouse move event listener to the document and the click listener to the mood board div so that the element can be dragged anywhere on the screen, but dropped only on the mood board div.
+  document.addEventListener('mousemove', mouseMoveHandler)
+  moodBoardEl.addEventListener('click', placeElementClickHandler)
 }
 
 // ? This is the event handler for the mouse move event. This will be called whenever the mouse is moved on the screen.
@@ -92,10 +116,8 @@ function mouseMoveHandler(event) {
 // ? When we click, we find the position of the mouse relative to the mood board and update the position of the element accordingly. to "place" it on the mood board.
 function placeElementClickHandler(event) {
   if (currentElement) {
-    // TODO: Explain what getBoundingClientRect() does
     const moodBoardRect = moodBoardEl.getBoundingClientRect();
 
-    // TODO: Explain what the following code does
     const left = `${event.clientX - moodBoardRect.left}px`;
     const top = `${event.clientY - moodBoardRect.top}px`;
 
@@ -103,13 +125,11 @@ function placeElementClickHandler(event) {
     currentElement.style.left = left;
     currentElement.style.top = top;
 
-    // TODO: Explain why we remove the draggable class from the element
     currentElement.classList.remove('draggable');
 
     // ? Append the element to the mood board with the already calculated position.
     moodBoardEl.appendChild(currentElement);
 
-    // TODO: Explain what the `tagName` property is used for
     if (currentElement.tagName === 'IMG') {
       // ? Push the image object to the tempStorageObject images property/array
       tempStorageObject.images.push({
